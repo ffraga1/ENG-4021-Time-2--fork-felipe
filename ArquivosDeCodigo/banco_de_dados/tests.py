@@ -124,6 +124,22 @@ class TestesEdicaoRelatorioPreventivo(TestCase):
         self.assertEqual(self.historico.idade_diagnostico, 50)
         self.assertContains(resposta, 'Histórico familiar atualizado')
 
+    def test_adiciona_historico_familiar_pelo_relatorio(self):
+        resposta = self.client.post(reverse('RelatorioPreventivo'), {
+            'acao': 'adicionar_historico',
+            'parente': 'Avó materna',
+            'doenca': 'Diabetes',
+            'idade_diagnostico': '60'
+        })
+
+        novo = HistoricoFamiliar.objects.get(
+            perfil=self.perfil,
+            parente='Avó materna'
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(novo.doenca, 'Diabetes')
+        self.assertContains(resposta, 'Histórico familiar adicionado')
+
     def test_edita_cuidado(self):
         resposta = self.client.post(reverse('RelatorioPreventivo'), {
             'acao': 'editar_cuidado',
@@ -139,6 +155,22 @@ class TestesEdicaoRelatorioPreventivo(TestCase):
         self.assertEqual(self.cuidado.nome, 'Hemograma')
         self.assertEqual(self.cuidado.data, date(2026, 12, 1))
         self.assertContains(resposta, 'Cuidado atualizado com sucesso')
+
+    def test_adiciona_cuidado_pelo_relatorio(self):
+        resposta = self.client.post(reverse('RelatorioPreventivo'), {
+            'acao': 'adicionar_cuidado',
+            'tipo': 'Vacina',
+            'nome': 'Vacina da gripe',
+            'data': '2026-11-20'
+        })
+
+        novo = Cuidado.objects.get(
+            perfil=self.perfil,
+            nome='Vacina da gripe'
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(novo.tipo, 'Vacina')
+        self.assertContains(resposta, 'Cuidado adicionado com sucesso')
 
     def test_nao_edita_historico_de_outro_perfil(self):
         outro_usuario = Usuario.objects.create(
