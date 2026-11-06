@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import date
 from django.utils.dateparse import parse_date
-from banco_de_dados.models import Usuario, Cuidado
+from banco_de_dados.models import Usuario, Perfil, HistoricoFamiliar, Cuidado
 
 def home(request):
     '''
@@ -12,7 +12,47 @@ def home(request):
     return render(request, 'home.html')
 
 def PerfilSaude(request):
-    return render(request, 'PerfilSaude.html')
+    usuario_id = request.session.get('usuario_id')
+
+    if not usuario_id:
+        return redirect('Login')
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    perfil = Perfil.objects.filter(usuario=usuario).first()
+    mensagem = ''
+    erro = ''
+
+    if request.method == 'POST':
+        nome = request.POST.get('nome', '').strip()
+        data_nascimento = parse_date(
+            request.POST.get('data_nascimento', '')
+        )
+        sexo = request.POST.get('sexo', '').strip()
+
+        if not nome or not data_nascimento or not sexo:
+            erro = 'Preencha todos os campos do perfil.'
+        else:
+            if perfil:
+                perfil.nome = nome
+                perfil.data_nascimento = data_nascimento
+                perfil.sexo = sexo
+                perfil.save()
+            else:
+                perfil = Perfil.objects.create(
+                    usuario=usuario,
+                    nome=nome,
+                    data_nascimento=data_nascimento,
+                    sexo=sexo
+                )
+
+            mensagem = 'Perfil salvo com sucesso.'
+
+    return render(request, 'PerfilSaude.html', {
+        'usuario': usuario,
+        'perfil': perfil,
+        'mensagem': mensagem,
+        'erro': erro
+    })
 
 def ComoUsar(request):
 
