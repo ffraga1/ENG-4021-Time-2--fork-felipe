@@ -341,6 +341,29 @@ def RelatorioPreventivo(request):
                     historico.save()
                     mensagem = 'Histórico familiar atualizado com sucesso.'
 
+            elif acao == 'adicionar_historico':
+                parente = request.POST.get('parente', '').strip()
+                doenca = request.POST.get('doenca', '').strip()
+                idade_texto = request.POST.get('idade_diagnostico', '').strip()
+
+                try:
+                    idade = int(idade_texto) if idade_texto else None
+                except ValueError:
+                    idade = -1
+
+                if not parente or not doenca:
+                    erro = 'Informe o parentesco e a condição de saúde.'
+                elif idade is not None and (idade < 0 or idade > 120):
+                    erro = 'A idade no diagnóstico deve estar entre 0 e 120 anos.'
+                else:
+                    HistoricoFamiliarModel.objects.create(
+                        perfil=perfil,
+                        parente=parente,
+                        doenca=doenca,
+                        idade_diagnostico=idade
+                    )
+                    mensagem = 'Histórico familiar adicionado com sucesso.'
+
             elif acao == 'editar_cuidado':
                 cuidado = get_object_or_404(
                     Cuidado,
@@ -360,6 +383,23 @@ def RelatorioPreventivo(request):
                     cuidado.data = data_cuidado
                     cuidado.save()
                     mensagem = 'Cuidado atualizado com sucesso.'
+
+            elif acao == 'adicionar_cuidado':
+                tipo = request.POST.get('tipo', '').strip()
+                nome = request.POST.get('nome', '').strip()
+                data_cuidado = parse_date(request.POST.get('data', ''))
+                tipos_validos = ('Consulta', 'Exame', 'Vacina')
+
+                if tipo not in tipos_validos or not nome or not data_cuidado:
+                    erro = 'Preencha corretamente o tipo, o cuidado e a data.'
+                else:
+                    Cuidado.objects.create(
+                        perfil=perfil,
+                        tipo=tipo,
+                        nome=nome,
+                        data=data_cuidado
+                    )
+                    mensagem = 'Cuidado adicionado com sucesso.'
             else:
                 erro = 'Não foi possível identificar a alteração solicitada.'
 
