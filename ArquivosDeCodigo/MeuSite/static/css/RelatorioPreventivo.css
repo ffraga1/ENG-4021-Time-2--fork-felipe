@@ -88,6 +88,28 @@ footer { text-align: center; padding: 20px; color: #55736c; }
 }
 
 .orientacao { color: #55736c; font-size: 14px; }
+.formulario-adicionar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #dbe7e2;
+    border-radius: 6px;
+    background: #f7fbf8;
+}
+.formulario-adicionar label { font-size: 14px; font-weight: bold; }
+.formulario-adicionar input,
+.formulario-adicionar select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px;
+    border: 1px solid #b9ccc5;
+    border-radius: 4px;
+    font: inherit;
+    background: white;
+}
 .mensagem, .erro {
     border-radius: 5px;
     padding: 12px 14px;
@@ -116,4 +138,7 @@ button.salvar {
         padding: 0;
         appearance: none;
     }
+}
+@media (max-width: 760px) {
+    .formulario-adicionar { grid-template-columns: 1fr; }
 }
