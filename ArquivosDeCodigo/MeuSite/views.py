@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import date
 from django.utils.dateparse import parse_date
-from banco_de_dados.models import Usuario, Perfil, HistoricoFamiliar, Cuidado
+from banco_de_dados.models import Usuario, Perfil, HistoricoFamiliar as HistoricoFamiliarModel, Cuidado
 
 def home(request):
     '''
@@ -308,14 +308,14 @@ def RelatorioPreventivo(request):
     perfil = Perfil.objects.filter(usuario=usuario).first()
 
     if perfil:
-        historicos = HistoricoFamiliar.objects.filter(
+        historicos = HistoricoFamiliarModel.objects.filter(
             perfil=perfil
         ).order_by('parente', 'doenca')
         cuidados = Cuidado.objects.filter(
             perfil=perfil
         ).order_by('data')
     else:
-        historicos = HistoricoFamiliar.objects.none()
+        historicos = HistoricoFamiliarModel.objects.none()
         cuidados = Cuidado.objects.none()
 
     return render(request, 'RelatorioPreventivo.html', {
