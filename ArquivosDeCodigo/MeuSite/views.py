@@ -299,7 +299,31 @@ def CalendarioCuidados(request):
     return render(request, 'CalendarioCuidados.html', contexto)
 
 def RelatorioPreventivo(request):
-    return render(request, 'RelatorioPreventivo.html')
+    usuario_id = request.session.get('usuario_id')
+
+    if not usuario_id:
+        return redirect('Login')
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    perfil = Perfil.objects.filter(usuario=usuario).first()
+
+    if perfil:
+        historicos = HistoricoFamiliar.objects.filter(
+            perfil=perfil
+        ).order_by('parente', 'doenca')
+        cuidados = Cuidado.objects.filter(
+            perfil=perfil
+        ).order_by('data')
+    else:
+        historicos = HistoricoFamiliar.objects.none()
+        cuidados = Cuidado.objects.none()
+
+    return render(request, 'RelatorioPreventivo.html', {
+        'usuario': usuario,
+        'perfil': perfil,
+        'historicos': historicos,
+        'cuidados': cuidados
+    })
 
 def Familiares(request):
 
