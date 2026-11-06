@@ -19,9 +19,14 @@
 
     <main>
         <h1 class="nao-imprimir">Relatório preventivo</h1>
-        <p class="nao-imprimir">
-            Resumo das informações de saúde cadastradas no MedMap.
-        </p>
+        <p class="nao-imprimir">Resumo das informações de saúde cadastradas no MedMap.</p>
+
+        {% if mensagem %}
+            <p class="mensagem nao-imprimir">{{ mensagem }}</p>
+        {% endif %}
+        {% if erro %}
+            <p class="erro nao-imprimir">{{ erro }}</p>
+        {% endif %}
 
         <section class="relatorio">
             <header>
@@ -38,6 +43,7 @@
                 <p><strong>Sexo:</strong> {{ perfil.sexo }}</p>
 
                 <h3>Histórico familiar</h3>
+                <p class="orientacao nao-imprimir">Altere os campos desejados e clique em Salvar.</p>
 
                 {% if historicos %}
                     <table>
@@ -46,20 +52,24 @@
                                 <th>Parente</th>
                                 <th>Condição</th>
                                 <th>Idade no diagnóstico</th>
+                                <th class="nao-imprimir">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for historico in historicos %}
                                 <tr>
-                                    <td>{{ historico.parente }}</td>
-                                    <td>{{ historico.doenca }}</td>
-                                    <td>
-                                        {% if historico.idade_diagnostico %}
-                                            {{ historico.idade_diagnostico }} anos
-                                        {% else %}
-                                            Não informada
-                                        {% endif %}
-                                    </td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="acao" value="editar_historico">
+                                        <input type="hidden" name="historico_id" value="{{ historico.id }}">
+                                        <td><input name="parente" value="{{ historico.parente }}" maxlength="50" required></td>
+                                        <td><input name="doenca" value="{{ historico.doenca }}" maxlength="150" required></td>
+                                        <td>
+                                            <input name="idade_diagnostico" type="number" min="0" max="120"
+                                                value="{% if historico.idade_diagnostico is not None %}{{ historico.idade_diagnostico }}{% endif %}">
+                                        </td>
+                                        <td class="nao-imprimir"><button class="salvar" type="submit">Salvar</button></td>
+                                    </form>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -69,6 +79,7 @@
                 {% endif %}
 
                 <h3>Cuidados para acompanhamento</h3>
+                <p class="orientacao nao-imprimir">Também é possível corrigir o tipo, o nome e a data de cada cuidado.</p>
 
                 {% if cuidados %}
                     <table>
@@ -77,14 +88,27 @@
                                 <th>Categoria</th>
                                 <th>Cuidado</th>
                                 <th>Data</th>
+                                <th class="nao-imprimir">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for cuidado in cuidados %}
                                 <tr>
-                                    <td>{{ cuidado.tipo }}</td>
-                                    <td>{{ cuidado.nome }}</td>
-                                    <td>{{ cuidado.data|date:"d/m/Y" }}</td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="acao" value="editar_cuidado">
+                                        <input type="hidden" name="cuidado_id" value="{{ cuidado.id }}">
+                                        <td>
+                                            <select name="tipo" required>
+                                                <option value="Consulta" {% if cuidado.tipo == "Consulta" %}selected{% endif %}>Consulta</option>
+                                                <option value="Exame" {% if cuidado.tipo == "Exame" %}selected{% endif %}>Exame</option>
+                                                <option value="Vacina" {% if cuidado.tipo == "Vacina" %}selected{% endif %}>Vacina</option>
+                                            </select>
+                                        </td>
+                                        <td><input name="nome" value="{{ cuidado.nome }}" maxlength="150" required></td>
+                                        <td><input name="data" type="date" value="{{ cuidado.data|date:'Y-m-d' }}" required></td>
+                                        <td class="nao-imprimir"><button class="salvar" type="submit">Salvar</button></td>
+                                    </form>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -93,29 +117,18 @@
                     <p>Nenhum cuidado foi cadastrado para este perfil.</p>
                 {% endif %}
             {% else %}
-                <p>
-                    O usuário ainda não possui um perfil de saúde cadastrado.
-                </p>
-                <p class="nao-imprimir">
-                    <a href="{% url 'PerfilSaude' %}">Cadastrar perfil de saúde</a>
-                </p>
+                <p>O usuário ainda não possui um perfil de saúde cadastrado.</p>
+                <p class="nao-imprimir"><a href="{% url 'PerfilSaude' %}">Cadastrar perfil de saúde</a></p>
             {% endif %}
 
-            <p class="alerta">
-                Este relatório organiza os dados cadastrados pelo usuário e
-                não substitui uma orientação médica.
-            </p>
+            <p class="alerta">Este relatório organiza os dados cadastrados pelo usuário e não substitui uma orientação médica.</p>
         </section>
 
         {% if perfil %}
-            <button class="nao-imprimir" type="button" onclick="window.print()">
-                Imprimir / salvar como PDF
-            </button>
+            <button class="nao-imprimir" type="button" onclick="window.print()">Imprimir / salvar como PDF</button>
         {% endif %}
     </main>
 
-    <footer class="nao-imprimir">
-        MedMap - seu mapa de saúde preventiva
-    </footer>
+    <footer class="nao-imprimir">MedMap - seu mapa de saúde preventiva</footer>
 </body>
 </html>
