@@ -16,33 +16,106 @@
             <a href="{% url 'CheckupInteligente' %}">Checkup Inteligente</a>
         </div>
     </nav>
+
     <main>
         <h1 class="nao-imprimir">Relatório preventivo</h1>
-        <p class="nao-imprimir">Modelo de organização das informações de saúde para consulta e impressão.</p>
+        <p class="nao-imprimir">
+            Resumo das informações de saúde cadastradas no MedMap.
+        </p>
+
         <section class="relatorio">
             <header>
                 <h2>MedMap - Resumo de cuidados</h2>
-                <span>MODELO ILUSTRATIVO</span>
+                <span>GERADO PELO SISTEMA</span>
             </header>
+
             <h3>Dados do perfil</h3>
-            <p><strong>Usuário:</strong> Exemplo fictício</p>
-            <p><strong>Histórico de saúde:</strong> Não informado</p>
-            <h3>Cuidados para acompanhamento</h3>
-            <table>
-                <thead>
-                    <tr><th>Categoria</th><th>Objetivo</th><th>Situação</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Consulta</td><td>Acompanhamento de rotina</td><td>Exemplo</td></tr>
-                    <tr><td>Exame</td><td>Avaliação individual</td><td>Exemplo</td></tr>
-                    <tr><td>Vacina</td><td>Conferir carteira de vacinação</td><td>Exemplo</td></tr>
-                </tbody>
-            </table>
-            <p class="alerta">Este relatório contém apenas dados fictícios. Não é uma orientação médica.</p>
+
+            {% if perfil %}
+                <p><strong>Usuário:</strong> {{ usuario.nome }}</p>
+                <p><strong>Perfil:</strong> {{ perfil.nome }}</p>
+                <p><strong>Data de nascimento:</strong> {{ perfil.data_nascimento|date:"d/m/Y" }}</p>
+                <p><strong>Sexo:</strong> {{ perfil.sexo }}</p>
+
+                <h3>Histórico familiar</h3>
+
+                {% if historicos %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parente</th>
+                                <th>Condição</th>
+                                <th>Idade no diagnóstico</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for historico in historicos %}
+                                <tr>
+                                    <td>{{ historico.parente }}</td>
+                                    <td>{{ historico.doenca }}</td>
+                                    <td>
+                                        {% if historico.idade_diagnostico %}
+                                            {{ historico.idade_diagnostico }} anos
+                                        {% else %}
+                                            Não informada
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Nenhum histórico familiar foi cadastrado para este perfil.</p>
+                {% endif %}
+
+                <h3>Cuidados para acompanhamento</h3>
+
+                {% if cuidados %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Cuidado</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cuidado in cuidados %}
+                                <tr>
+                                    <td>{{ cuidado.tipo }}</td>
+                                    <td>{{ cuidado.nome }}</td>
+                                    <td>{{ cuidado.data|date:"d/m/Y" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Nenhum cuidado foi cadastrado para este perfil.</p>
+                {% endif %}
+            {% else %}
+                <p>
+                    O usuário ainda não possui um perfil de saúde cadastrado.
+                </p>
+                <p class="nao-imprimir">
+                    <a href="{% url 'PerfilSaude' %}">Cadastrar perfil de saúde</a>
+                </p>
+            {% endif %}
+
+            <p class="alerta">
+                Este relatório organiza os dados cadastrados pelo usuário e
+                não substitui uma orientação médica.
+            </p>
         </section>
-        <button class="nao-imprimir" type="button" onclick="window.print()">Imprimir / salvar como PDF</button>
-        <p class="aviso nao-imprimir">A impressão utiliza o navegador; o sistema ainda não gera relatórios com dados reais.</p>
+
+        {% if perfil %}
+            <button class="nao-imprimir" type="button" onclick="window.print()">
+                Imprimir / salvar como PDF
+            </button>
+        {% endif %}
     </main>
-    <footer class="nao-imprimir">MedMap - seu mapa de saúde preventiva</footer>
+
+    <footer class="nao-imprimir">
+        MedMap - seu mapa de saúde preventiva
+    </footer>
 </body>
 </html>
