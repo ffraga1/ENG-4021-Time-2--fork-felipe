@@ -43,6 +43,20 @@
                 <p><strong>Sexo:</strong> {{ perfil.sexo }}</p>
 
                 <h3>Histórico familiar</h3>
+                <form method="post" class="formulario-adicionar nao-imprimir">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="adicionar_historico">
+                    <label>Parente
+                        <input name="parente" maxlength="50" placeholder="Ex.: Pai" required>
+                    </label>
+                    <label>Condição
+                        <input name="doenca" maxlength="150" placeholder="Ex.: Hipertensão" required>
+                    </label>
+                    <label>Idade no diagnóstico
+                        <input name="idade_diagnostico" type="number" min="0" max="120" placeholder="Ex.: 45">
+                    </label>
+                    <button class="salvar" type="submit">Adicionar histórico</button>
+                </form>
                 <p class="orientacao nao-imprimir">Altere os campos desejados e clique em Salvar.</p>
 
                 {% if historicos %}
@@ -79,6 +93,25 @@
                 {% endif %}
 
                 <h3>Cuidados para acompanhamento</h3>
+                <form method="post" class="formulario-adicionar nao-imprimir">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="adicionar_cuidado">
+                    <label>Categoria
+                        <select name="tipo" required>
+                            <option value="">Selecione</option>
+                            <option value="Consulta">Consulta</option>
+                            <option value="Exame">Exame</option>
+                            <option value="Vacina">Vacina</option>
+                        </select>
+                    </label>
+                    <label>Cuidado
+                        <input name="nome" maxlength="150" placeholder="Ex.: Consulta cardiológica" required>
+                    </label>
+                    <label>Data
+                        <input name="data" type="date" required>
+                    </label>
+                    <button class="salvar" type="submit">Adicionar cuidado</button>
+                </form>
                 <p class="orientacao nao-imprimir">Também é possível corrigir o tipo, o nome e a data de cada cuidado.</p>
 
                 {% if cuidados %}
