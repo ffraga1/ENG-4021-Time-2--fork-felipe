@@ -9,11 +9,11 @@ from banco_de_dados.models import Cuidado, HistoricoFamiliar, Perfil, Usuario
 class TestesFiltrosCalendario(TestCase):
     @classmethod
     def setUpTestData(cls):
-        usuario = Usuario.objects.create(
+        cls.usuario = Usuario.objects.create(
             nome='Pessoa Teste', email='teste-filtros@medmap.com', senha='teste'
         )
         perfil = Perfil.objects.create(
-            usuario=usuario, nome='Pessoa Teste',
+            usuario=cls.usuario, nome='Pessoa Teste',
             data_nascimento=date(1998, 5, 10), sexo='Não informado'
         )
         exemplos = [
@@ -24,6 +24,11 @@ class TestesFiltrosCalendario(TestCase):
         ]
         for tipo, nome, dia in exemplos:
             Cuidado.objects.create(perfil=perfil, tipo=tipo, nome=nome, data=dia)
+
+    def setUp(self):
+        sessao = self.client.session
+        sessao['usuario_id'] = self.usuario.id
+        sessao.save()
 
     def nomes(self, resposta):
         return [c.nome for c in resposta.context['cuidados']]
