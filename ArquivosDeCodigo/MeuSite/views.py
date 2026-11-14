@@ -438,6 +438,74 @@ def ListarUsuarios(request):
     })
 
 
+def CalendarioCuidados(request):
+    usuario_id = request.session.get('usuario_id')
+
+    if not usuario_id:
+        return redirect('Tela')
+
+    perfil = Perfil.objects.filter(usuario_id=usuario_id).first()
+
+    if not perfil:
+        return redirect('PerfilSaude')
+
+    cuidados = Cuidado.objects.filter(perfil=perfil)
+    tipos_validos = ('Consulta', 'Exame', 'Vacina')
+
+    tipo = request.GET.get('tipo', '')
+    if tipo not in tipos_validos:
+        tipo = ''
+
+    if tipo:
+        cuidados = cuidados.filter(tipo=tipo)
+
+    inicio = request.GET.get('inicio', '')
+    fim = request.GET.get('fim', '')
+    mensagem_erro = ''
+
+    inicio_data = parse_date(inicio) if inicio else None
+    fim_data = parse_date(fim) if fim else None
+
+    if inicio and not inicio_data:
+        mensagem_erro = 'A data inicial informada é inválida.'
+        inicio = ''
+
+    if fim and not fim_data:
+        mensagem_erro = 'A data final informada é inválida.'
+        fim = ''
+
+    if inicio_data and fim_data and inicio_data > fim_data:
+        mensagem_erro = 'A data inicial deve ser anterior ou igual à data final.'
+        cuidados = Cuidado.objects.none()
+    else:
+        if inicio_data:
+            cuidados = cuidados.filter(data__gte=inicio_data)
+
+        if fim_data:
+            cuidados = cuidados.filter(data__lte=fim_data)
+
+    ordem = request.GET.get('ordem', 'asc')
+    if ordem not in ('asc', 'desc'):
+        ordem = 'asc'
+
+    cuidados = cuidados.order_by(
+        '-data' if ordem == 'desc' else 'data',
+        'id'
+    )
+
+    return render(request, 'CalendarioCuidados.html', {
+        'cuidados': cuidados,
+        'hoje': date.today(),
+        'tipos_cuidado': tipos_validos,
+        'tipo_selecionado': tipo,
+        'inicio': inicio,
+        'fim': fim,
+        'ordem': ordem,
+        'mensagem_erro': mensagem_erro,
+        'total_cuidados': cuidados.count()
+    })
+
+
 def CadastroCuidados(request):
     usuario_id = request.session.get('usuario_id')
 
@@ -621,8 +689,6 @@ def Familiares(request):
     return render(request, 'Familiares.html', {'familiares': familiares})
 
 
-def CadastroCuidados(request):
-    return render(request, 'CadastroCuidados.html')
 
 def InicioLogado(request):
     usuario_id = request.session.get('usuario_id')
