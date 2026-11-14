@@ -15,7 +15,7 @@ def PerfilSaude(request):
     usuario_id = request.session.get('usuario_id')
 
     if not usuario_id:
-        return redirect('Login')
+        return redirect('Tela')
 
     usuario = get_object_or_404(Usuario, id=usuario_id)
     perfil = Perfil.objects.filter(usuario=usuario).first()
